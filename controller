@@ -6,7 +6,7 @@ import signal
 
 processed = 0
 def handle_signal(sig, frame):
-	print(f'Processed {processed} lines', flush = True)
+	print(f'Processed {processed} lines', flush = True, file = sys.stderr)
 
 signal.signal(signal.SIGUSR1, handle_signal)
 a_r, a_w = os.pipe()
