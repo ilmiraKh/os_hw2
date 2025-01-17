@@ -1,0 +1,48 @@
+#! /usr/bin/python3
+
+import os
+import random
+import signal
+
+processed = 0
+def handle_signal(sig, frame):
+	print(f'Processed {processed} lines', flush = True)
+
+signal.signal(signal.SIGUSR1, handle_signal)
+a_r, a_w = os.pipe()
+b_r, b_w = os.pipe()
+c_r, c_w = os.pipe()
+
+p1 = os.fork()
+if p1 == 0:
+	os.dup2(a_w, 1)
+	os.close(a_r)
+	os.close(b_r)
+	os.close(c_r)
+	os.close(b_w)
+	os.close(c_w)
+	n = random.randint(120, 180)
+	os.execve('./generator', ['./generator', str(n)], os.environ)
+else:
+	p2 = os.fork()
+	if p2 == 0:
+		os.dup2(b_r, 0)
+		os.dup2(c_w, 1)
+		os.close(a_r)
+		os.close(a_w)
+		os.close(b_w)
+		os.close(c_r)
+		os.execve('/usr/bin/bc', ['/usr/bin/bc'], os.environ)
+	else:
+		os.close(a_w)
+		os.close(b_r)
+		os.close(c_w)
+		a_r = os.fdopen(a_r)
+		c_r = os.fdopen(c_r)
+		while True:
+			line = a_r.readline()
+			if not line:
+				os._exit(0)
+			os.write(b_w, line.encode())
+			print(line.strip(), '=', c_r.readline().strip(), flush = True)
+			processed += 1

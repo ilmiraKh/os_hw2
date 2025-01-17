@@ -1,0 +1,16 @@
+#! /usr/bin/python3
+
+import os
+import sys
+import time
+import random
+
+n = int(sys.argv[1])
+if n < 120 or n >180:
+	os._exit(1)
+signs = ['+', '-', '*', '/']
+for i in range(n):
+	print(random.randint(1,9), random.choice(signs), random.randint(1,9), flush = True)
+	time.sleep(1)
+os._exit(0)
+
